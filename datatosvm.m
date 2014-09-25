@@ -15,6 +15,9 @@ function readData(dataDirectory)
     data = dir(dataDirectory);
     
     % Initialize vectors for holding chunks of NIRS data, separated by trial
+    % Separate vectors are made for data collected at each wavelength of 
+    % near-infrared light; for this project, the first was at 760 nm and the 
+    % second was at 850 nm.
     targetChunksWaveOne = {};
     targetChunksWaveTwo = {};
     otherChunksWaveOne = {};
