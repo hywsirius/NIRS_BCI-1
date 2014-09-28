@@ -110,7 +110,9 @@ function readData(dataDirectory)
     compositeDataSetTwo = [targetDataSetTwo; otherDataSetTwo];
  
     % Populate matrix with data from each channel and at each wavelength 
-    dataStreams = [compositeDataSetOne(:,1) compositeDataSetTwo(:,1) compositeDataSetOne(:,2) compositeDataSetTwo(:,2) compositeDataSetOne(:,3) compositeDataSetTwo(:,3) compositeDataSetOne(:,4) compositeDataSetTwo(:,4) compositeDataSetOne(:,5) compositeDataSetTwo(:,5)];
+    for i = 1:length(compositeDataSetOne(1,:))
+        dataStreams = [dataStreams compositeDataSetOne(:,i) compositeDataSetTwo(:,i)];
+    end
     
     clf;
     
