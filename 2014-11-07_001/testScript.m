@@ -14,7 +14,7 @@ DdtraceRatio = {}; DttraceW1 = {}; DttraceW2 = {};
 shallowChannels = [129, 130, 133, 150, 163, 164, 167, 168];
 deepChannels = [131, 135, 145, 148, 149, 152, 162, 166];
 channels = [deepChannels shallowChannels];
-index = 1;
+
 
 for channelInd = channels
     ttraceW1{channelInd} = zeros(length(targetTraces{1}{1}(:,channelInd)), length(targetTraces{1}));
@@ -41,20 +41,26 @@ for channelInd = channels
     
 end
 
+
+CttraceW1 = {}; CttraceW2 = {}; CdtraceW1 = {}; CdtraceW2 = {};
+index = 1;
 for i = deepChannels
     % Corrected signals
-    CttraceW1{i} = NttraceW1{i} - NttraceW1{shallowChannels(index)};
-    CttraceW2{i} = NttraceW2{i} - NttraceW2{shallowChannels(index)};
-    CdtraceW1{i} = NdtraceW1{i} - NdtraceW1{shallowChannels(index)};
-    CdtraceW2{i} = NdtraceW2{i} - NdtraceW2{shallowChannels(index)};
+    CttraceW1{index} = NttraceW1{i} - NttraceW1{shallowChannels(index)};
+    CttraceW2{index} = NttraceW2{i} - NttraceW2{shallowChannels(index)};
+    CdtraceW1{index} = NdtraceW1{i} - NdtraceW1{shallowChannels(index)};
+    CdtraceW2{index} = NdtraceW2{i} - NdtraceW2{shallowChannels(index)};
     
     figure(i)
     clf
-    errorbar(mean(CttraceW1{i},2), std(CttraceW1{i},1,2))
+    errorbar(mean(CttraceW1{index},2), std(CttraceW1{index},1,2))
     hold on
-    errorbar(mean(CdtraceW1{i},2), std(CdtraceW1{i},1,2),'r')
+    errorbar(mean(CdtraceW1{index},2), std(CdtraceW1{index},1,2),'r')
     index = index + 1;
 end
+
+[nPredictedTargets, percentCorrect, predictedFlags, solutionsTable] = classifier(CttraceW1, CdtraceW1);
+
 
 %Creating a NttraceW1 descriptor by concatenating the output of each
 %channel
