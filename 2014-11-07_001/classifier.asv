@@ -21,8 +21,9 @@ for i = 1:length(targetSet)
     tempTesting = [targetSet{i}(ceil(targetsLength/2)+1:targetsLength,1); distractorSet{i}(ceil(distractorsLength/2)+1:distractorsLength,1)];
     testingData = [testingData, tempTesting];
 end
-
-trainingFlags = [ones(ceil(targetsLength/2),length(targetSet)); zeros(ceil(distractorsLength/2),length(distractorSet))];
+trainingFlags = ones(ceil(targetsLength/2),length(targetSet));
+tempFlags = zeros(ceil(distractorsLength/2),length(distractorSet));
+trainingFlags = [trainingFlags; tempFlags];
 SVMModel = fitcsvm(trainingData, trainingFlags, 'KernelFunction', 'rbf');
 actual
 [testFlags, Score] = predict(SVMModel, testingData);
