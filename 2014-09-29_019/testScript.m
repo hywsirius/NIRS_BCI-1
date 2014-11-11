@@ -61,7 +61,7 @@ NdtraceRatio{channelInd} = (NdtraceW2{channelInd} - (NdtraceW2{channelInd}(1,:)'
 
 DdtraceW1{channelInd} = diff(dtraceW1{channelInd});
 DdtraceW2{channelInd} = diff(dtraceW2{channelInd});
-
+%keyboard;
 %DdtraceRatio{channelInd} = DdtraceW2{channelInd}./(DdtraceW1{channelInd} + DdtraceW2{channelInd});
 
 

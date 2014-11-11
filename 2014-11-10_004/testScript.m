@@ -1,5 +1,5 @@
 
-[targetTraces, distractorTraces] = newExtractor('NIRS-2014-11-07_001');
+[targetTraces, distractorTraces] = newExtractor('NIRS-2014-11-10_004');
 
 numChannels = 24;
 
@@ -11,12 +11,11 @@ NttraceW1 = {}; NttraceW2 = {}; NdtraceW1 = {}; NdtraceW2 = {};
 
 DttraceRatio = {}; DdtraceW1 = {}; DdtraceW2 = {};
 DdtraceRatio = {}; DttraceW1 = {}; DttraceW2 = {};
-shallowChannels = [129, 130, 133, 150, 163, 164, 167, 168];
-deepChannels = [131, 135, 145, 148, 149, 152, 162, 166];
-channels = [deepChannels shallowChannels];
+nChannels = 24;
+deepChannels = [3, 7, 9, 12, 13, 16, 18, 22]
+shallowChannels = [1, 2, 5, 14, 19, 20, 23, 24]
 
-
-for channelInd = channels
+for channelInd = 1:nChannels
     ttraceW1{channelInd} = zeros(length(targetTraces{1}{1}(:,channelInd)), length(targetTraces{1}));
     ttraceW2{channelInd} = zeros(length(targetTraces{1}{1}(:,channelInd)), length(targetTraces{1}));
     dtraceW1{channelInd} = zeros(length(distractorTraces{1}{1}(:,channelInd)), length(distractorTraces{1}));
@@ -46,6 +45,7 @@ CttraceW1 = {}; CttraceW2 = {}; CdtraceW1 = {}; CdtraceW2 = {};
 index = 1;
 for i = deepChannels
     % Corrected signals
+    
     CttraceW1{index} = NttraceW1{i} - NttraceW1{shallowChannels(index)};
     CttraceW2{index} = NttraceW2{i} - NttraceW2{shallowChannels(index)};
     CdtraceW1{index} = NdtraceW1{i} - NdtraceW1{shallowChannels(index)};
@@ -53,13 +53,13 @@ for i = deepChannels
     
     figure(i)
     clf
-    errorbar(mean(CttraceW1{index},2), std(CttraceW1{index},1,2))
+    errorbar(mean(CttraceW2{index},2), std(CttraceW2{index},1,2))
     hold on
-    errorbar(mean(CdtraceW1{index},2), std(CdtraceW1{index},1,2),'r')
+    errorbar(mean(CdtraceW2{index},2), std(CdtraceW2{index},1,2),'r')
     index = index + 1;
 end
 
-[nPredictedTargets, percentCorrect, predictedFlags] = blockClassifier(CttraceW1, CdtraceW1);
+[nPredictedTargets, percentCorrect, predictedFlags] = classifier(CttraceW1, CdtraceW1);
 
 
 %Creating a NttraceW1 descriptor by concatenating the output of each

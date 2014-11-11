@@ -1,17 +1,21 @@
-function [nPredictedTargets, percentCorrect, predictedFlags] = classifier(targetSet, distractorSet);
+function [nPredictedTargets, percentCorrect, predictedFlags] = newClassifier(targetSet, distractorSet)
 % each dataset: c channels, each with matrix of size observations by trials
-for i = 1:length(targetSet)
-    targetSet{i} = mean(targetSet{i},2);
+intervalStart = 10;
+intervalEnd = 40;
+
+meanTargetSet = {}; meanDistractorSet = {};
+for i = 1:length(targetSet)    
+    meanTargetSet{i} = mean(targetSet{i}(intervalStart:intervalEnd,:),1);
 end
 
 for i = 1:length(distractorSet)
-    distractorSet{i} = mean(distractorSet{i},2);
+    meanDistractorSet{i} = mean(distractorSet{i}(intervalStart:intervalEnd,:),1);
 end
 
 % for each channel, split half of the data into training data
 
-targetsLength = length(targetSet{i}(:,1));
-distractorsLength = length(distractorSet{i}(:,1));
+targetsLength = length(meanTargetSet{i});
+distractorsLength = length(meanDistractorSet{i});
 orderedpair = [];
 % accuracyGraph = [];
 % for q = 1:99
@@ -21,13 +25,13 @@ orderedpair = [];
     tempTraning = [];
     tempTesting = [];
     
-    for i = 1:length(targetSet)
-        tempTraining = [targetSet{i}(1:ceil(targetsLength*trainingFactor),1); distractorSet{i}(1:ceil(distractorsLength*trainingFactor),1)];
-        trainingData = [trainingData, tempTraining];
-        tempTesting = [targetSet{i}(ceil(targetsLength*trainingFactor)+1:targetsLength,1); distractorSet{i}(ceil(distractorsLength*trainingFactor)+1:distractorsLength,1)];
-        testingData = [testingData, tempTesting];
-    end
     
+    numTraining = ceil(targetsLength*trainingFactor)
+    meanTargetSetArray = vertcat(meanTargetSet{:});
+    meanDistractorSetArray = vertcat(meanDistractorSet{:});
+    trainingData = horzcat(meanTargetSetArray(:,1:numTraining), meanDistractorSetArray(:,1:numTraining))';
+    testingData = horzcat(meanTargetSetArray(:,numTraining + 1:end), meanDistractorSetArray(:,numTraining + 1:end))';
+
     trainingFlags = [ones(ceil(targetsLength*trainingFactor),1); zeros(ceil(distractorsLength*trainingFactor),1)];
     testingFlags = [ones(targetsLength - ceil(targetsLength*trainingFactor),1); zeros(distractorsLength - ceil(distractorsLength*trainingFactor), 1)];
     
@@ -44,4 +48,3 @@ orderedpair = [];
 %     orderedpair = [q, percentCorrect];
 %     accuracyGraph = [accuracyGraph; orderedpair];
 % end
-keyboard;
