@@ -3,57 +3,66 @@ function blockClassifier(targetSet, distractorSet);
 
 targets = [];
 distractors = [];
-startInd = 20;
-endInd = 60;
+startInd = 1;
+endInd = 77;
 
 tf = {};
 for i = 1:length(targetSet)
-    targetSetTemp = targetSet{i}(startInd:endInd);
+    targetSetTemp = targetSet{i}(startInd:endInd,:);
     tf{i} = reshape(targetSetTemp, numel(targetSetTemp),1);    
 end
 targets = horzcat(tf{:});
 
 for i = 1:length(distractorSet)
-    tf = [];
-    for j = 1:length(distractorSet{i}(1,:))
-        tf = [tf; distractorSet{i}(:,j)];
-    end
-    distractors = [distractors, tf];
+    distractorSetTemp = distractorSet{i}(startInd:endInd,:);
+    tf{i} = reshape(distractorSetTemp, numel(distractorSetTemp),1);    
 end
+distractors = horzcat(tf{:});
 
 trialFlags = [ones(size(targetSet{1},2), 1); (-1 * ones(size(targetSet{1},2), 1))]; 
 frameFlags = [ones(length(targets),1); (-1 * ones(length(distractors), 1))];
 
 blockData = [targets; distractors];
-nFrames = endInd - startInd;
-blockData = [blockData(:,4), blockData(:,7)];
+nFrames = endInd - startInd + 1;
+blockData = [blockData(:,7)];
+y = 1;
+z = 1;
 for i = 1:length(trialFlags(:,1))/2
     ind = true(length(blockData(:,1)),1); 
     ind(1 + (nFrames*(i-1)):(nFrames*(i))) = false;
+
     ind(1 + (nFrames*(i-1 + (length(trialFlags(:,1))/2))):(nFrames*(i + (length(trialFlags(:,1))/2)))) = false;
 
     trainingData = blockData(ind, :);
     trainingFlags = frameFlags(ind, :);
     
     testData = blockData(~ind,:);
-    
     testFlags = frameFlags(~ind,:);
+
     SVMModel = fitcsvm(trainingData, trainingFlags, 'KernelFunction', 'rbf', 'standardize', 'on');
     
-    [predictedFlag, Score] = predict(SVMModel, testData);
-%         [predictedFlags, Score] = predict(SVMModel, testingData);
+    [predictedTargetFlags, TScore] = predict(SVMModel, testData(1:(length(testData)/2), :));
+    [predictedDistractorFlags, DScore] = predict(SVMModel, testData((length(testData)/2):end, :));
+    a = sum(predictedTargetFlags);
+    b = sum(predictedDistractorFlags);
     
-      a = sum(abs(testFlags - predictedFlag))/2;
-      figure(i)
-      clf
-      plot(predictedFlag);
-%     a = sum(abs(testFlags(1:length(testFlags)/2,1) - predictedFlag(1:length(predictedFlag)/2,1)));
-%     b = sum(abs(testFlags(length(testFlags)/2:end,1) - predictedFlag(length(predictedFlag)/2:end,1)));
-    % compare to actual flag
-    display(a);
+    if a > 0
+        y = y + 1;
+    else
+        z = z + 1;
+    end
+    
+    if b < 0
+        y = y + 1;
+    else
+        z = z + 1;
+    end    
 end
 
-    % nPredictedTargets = sum(predictedFlags);
+display(y-1);
+display(z-1);
+display(y/(y+z));
+% nPredictedTargets = sum(predictedFlags);
 % fprintf('Number of frames to be predicted: %f\n', length(predictedFlags))
 % fprintf('Number of actual targets: %f\n', sum(testingFlags))
 % fprintf('Number of frames predicted to be targets: %f\n', nPredictedTargets)
