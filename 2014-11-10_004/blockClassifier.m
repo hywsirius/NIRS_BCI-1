@@ -24,9 +24,11 @@ frameFlags = [ones(length(targets),1); (-1 * ones(length(distractors), 1))];
 
 blockData = [targets; distractors];
 nFrames = endInd - startInd + 1;
-blockData = [blockData(:,7)];
+blockData = [blockData(:,1:5)];
 y = 1;
 z = 1;
+q = 1;
+p = 1;
 for i = 1:length(trialFlags(:,1))/2
     ind = true(length(blockData(:,1)),1); 
     ind(1 + (nFrames*(i-1)):(nFrames*(i))) = false;
@@ -53,15 +55,14 @@ for i = 1:length(trialFlags(:,1))/2
     end
     
     if b < 0
-        y = y + 1;
+        q = q + 1;
     else
-        z = z + 1;
+        p = p + 1;
     end    
 end
 
-display(y-1);
-display(z-1);
 display(y/(y+z));
+display(q/(q+p));
 % nPredictedTargets = sum(predictedFlags);
 % fprintf('Number of frames to be predicted: %f\n', length(predictedFlags))
 % fprintf('Number of actual targets: %f\n', sum(testingFlags))

@@ -12,8 +12,8 @@ NttraceW1 = {}; NttraceW2 = {}; NdtraceW1 = {}; NdtraceW2 = {};
 DttraceRatio = {}; DdtraceW1 = {}; DdtraceW2 = {};
 DdtraceRatio = {}; DttraceW1 = {}; DttraceW2 = {};
 nChannels = 24;
-deepChannels = [3, 7, 9, 12, 13, 16, 18, 22]
-shallowChannels = [1, 2, 5, 14, 19, 20, 23, 24]
+deepChannels = [3, 7, 9, 12, 13, 16, 18, 22];
+shallowChannels = [1, 2, 5, 14, 19, 20, 23, 24];
 
 for channelInd = 1:nChannels
     ttraceW1{channelInd} = zeros(length(targetTraces{1}{1}(:,channelInd)), length(targetTraces{1}));
@@ -51,15 +51,15 @@ for i = deepChannels
     CdtraceW1{index} = NdtraceW1{i} - NdtraceW1{shallowChannels(index)};
     CdtraceW2{index} = NdtraceW2{i} - NdtraceW2{shallowChannels(index)};
     
-    figure(i)
-    clf
-    errorbar(mean(CttraceW2{index},2), std(CttraceW2{index},1,2))
-    hold on
-    errorbar(mean(CdtraceW2{index},2), std(CdtraceW2{index},1,2),'r')
+%     figure(i)
+%     clf
+%     errorbar(mean(CttraceW2{index},2), std(CttraceW2{index},1,2))
+%     hold on
+%     errorbar(mean(CdtraceW2{index},2), std(CdtraceW2{index},1,2),'r')
     index = index + 1;
 end
 
-[nPredictedTargets, percentCorrect, predictedFlags] = classifier(CttraceW1, CdtraceW1);
+blockClassifier(CttraceW1, CdtraceW1);
 
 
 %Creating a NttraceW1 descriptor by concatenating the output of each
