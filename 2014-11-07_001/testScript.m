@@ -51,15 +51,15 @@ for i = deepChannels
     CdtraceW1{index} = NdtraceW1{i} - NdtraceW1{shallowChannels(index)};
     CdtraceW2{index} = NdtraceW2{i} - NdtraceW2{shallowChannels(index)};
     
-    figure(i)
-    clf
-    errorbar(mean(CttraceW1{index},2), std(CttraceW1{index},1,2))
-    hold on
-    errorbar(mean(CdtraceW1{index},2), std(CdtraceW1{index},1,2),'r')
-    index = index + 1;
+%      figure(i)
+%      clf
+%      errorbar(mean(CttraceW1{index},2), std(CttraceW1{index},1,2))
+%      hold on
+%      errorbar(mean(CdtraceW1{index},2), std(CdtraceW1{index},1,2),'r')
+     index = index + 1;
 end
 
-[nPredictedTargets, percentCorrect, predictedFlags] = blockClassifier(CttraceW1, CdtraceW1);
+blockClassifier(CttraceW1, CdtraceW1);
 
 
 %Creating a NttraceW1 descriptor by concatenating the output of each

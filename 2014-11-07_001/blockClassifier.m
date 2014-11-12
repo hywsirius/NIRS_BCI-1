@@ -1,42 +1,62 @@
-function [nPredictedTargets, percentCorrect, predictedFlags] = classifier(targetSet, distractorSet);
+function blockClassifier(targetSet, distractorSet);
 % each dataset: c channels, each with matrix of size observations by trials
 
-c = [];
+targets = [];
+distractors = [];
+startInd = 20;
+endInd = 60;
+
+tf = {};
 for i = 1:length(targetSet)
+    targetSetTemp = targetSet{i}(startInd:endInd);
+    tf{i} = reshape(targetSetTemp, numel(targetSetTemp),1);    
+end
+targets = horzcat(tf{:});
+
+for i = 1:length(distractorSet)
     tf = [];
-    for j = 1:length(targetSet{i}(1,:))
-        tf = [tf; targetSet{i}(:,j)];
+    for j = 1:length(distractorSet{i}(1,:))
+        tf = [tf; distractorSet{i}(:,j)];
     end
-    c = [c, tf];
+    distractors = [distractors, tf];
 end
-display(tf);
+
+trialFlags = [ones(size(targetSet{1},2), 1); (-1 * ones(size(targetSet{1},2), 1))]; 
+frameFlags = [ones(length(targets),1); (-1 * ones(length(distractors), 1))];
+
+blockData = [targets; distractors];
+nFrames = endInd - startInd;
+blockData = [blockData(:,4), blockData(:,7)];
+for i = 1:length(trialFlags(:,1))/2
+    ind = true(length(blockData(:,1)),1); 
+    ind(1 + (nFrames*(i-1)):(nFrames*(i))) = false;
+    ind(1 + (nFrames*(i-1 + (length(trialFlags(:,1))/2))):(nFrames*(i + (length(trialFlags(:,1))/2)))) = false;
+
+    trainingData = blockData(ind, :);
+    trainingFlags = frameFlags(ind, :);
     
-targetsLength = length(targetSet{i}(:,1));
-distractorsLength = length(distractorSet{i}(:,1));
-orderedpair = [];
-trainingFactor = .5;
-trainingData = [];
-testingData = [];
-tempTraning = [];
-tempTesting = [];
-
-for i = 1:length(targetSet)
-    tempTraining = [targetSet{i}(1:ceil(targetsLength*trainingFactor),1); distractorSet{i}(1:ceil(distractorsLength*trainingFactor),1)];
-    trainingData = [trainingData, tempTraining];
-    tempTesting = [targetSet{i}(ceil(targetsLength*trainingFactor)+1:targetsLength,1); distractorSet{i}(ceil(distractorsLength*trainingFactor)+1:distractorsLength,1)];
-    testingData = [testingData, tempTesting];
+    testData = blockData(~ind,:);
+    
+    testFlags = frameFlags(~ind,:);
+    SVMModel = fitcsvm(trainingData, trainingFlags, 'KernelFunction', 'rbf', 'standardize', 'on');
+    
+    [predictedFlag, Score] = predict(SVMModel, testData);
+%         [predictedFlags, Score] = predict(SVMModel, testingData);
+    
+      a = sum(abs(testFlags - predictedFlag))/2;
+      figure(i)
+      clf
+      plot(predictedFlag);
+%     a = sum(abs(testFlags(1:length(testFlags)/2,1) - predictedFlag(1:length(predictedFlag)/2,1)));
+%     b = sum(abs(testFlags(length(testFlags)/2:end,1) - predictedFlag(length(predictedFlag)/2:end,1)));
+    % compare to actual flag
+    display(a);
 end
 
-trainingFlags = [ones(ceil(targetsLength*trainingFactor),1); zeros(ceil(distractorsLength*trainingFactor),1)];
-testingFlags = [ones(targetsLength - ceil(targetsLength*trainingFactor),1); zeros(distractorsLength - ceil(distractorsLength*trainingFactor), 1)];
-
-SVMModel = fitcsvm(trainingData, trainingFlags, 'KernelFunction', 'rbf');
-[predictedFlags, Score] = predict(SVMModel, testingData);
-
-nPredictedTargets = sum(predictedFlags);
-fprintf('Number of frames to be predicted: %f\n', length(predictedFlags))
-fprintf('Number of actual targets: %f\n', sum(testingFlags))
-fprintf('Number of frames predicted to be targets: %f\n', nPredictedTargets)
-correct(predictedFlags == testingFlags) = 1;
-percentCorrect = sum(correct)/length(predictedFlags);
-fprintf('Percentage of frames correctly predicted: %f\n', percentCorrect)
+    % nPredictedTargets = sum(predictedFlags);
+% fprintf('Number of frames to be predicted: %f\n', length(predictedFlags))
+% fprintf('Number of actual targets: %f\n', sum(testingFlags))
+% fprintf('Number of frames predicted to be targets: %f\n', nPredictedTargets)
+% correct(predictedFlags == testingFlags) = 1;
+% percentCorrect = sum(correct)/length(predictedFlags);
+% fprintf('Percentage of frames correctly predicted: %f\n', percentCorrect)
